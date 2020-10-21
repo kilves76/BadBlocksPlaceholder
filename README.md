@@ -14,3 +14,6 @@ Also, you can continue cleaning placeholder files:
     BadBlocksPlaceholder clean e:\BadBlockPlaceholders\20190110
 
 This mode will test all files in the specified folder and delete the files which doesn't have any reading errors.
+
+# This version
+Also moves slow files out of the way too.
