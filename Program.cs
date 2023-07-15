@@ -28,7 +28,9 @@ namespace BadBlocksPlaceholder
             Validate(targetDir);
             Console.WriteLine("Done!");
         }
-        private const int sw_write_treshold_ticks = 250000; //Some magic. it usually takes 60000-200000 in normal cases on my pc
+        private const int sw_write_treshold_ticks = 250000 * (int.Parse(args[1]) / 1024);
+        //Some magic. it usually takes 60000-200000 in normal cases on my pc
+    
 
         private static string CreateBlocks(DriveInfo drive, int blockSize)
         {
