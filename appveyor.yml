@@ -1,15 +1,13 @@
 version: 1.0.{build}
-image: Visual Studio 2019
-
-branches:
-  only:
-    - master
+image: Visual Studio 2022
 
 install:
+  - ps: iex ((New-Object System.Net.WebClient).DownloadString('https://dot.net/v1/dotnet-install.ps1'))
+  - ps: ./dotnet-install.ps1 -Version 2.1.300
   - nuget restore BadBlocksPlaceholder.sln
 
 build:
   project: BadBlocksPlaceholder.sln
-  verbosity: minimal
+  verbosity: normal
 
 configuration: Release
