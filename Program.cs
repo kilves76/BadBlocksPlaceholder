@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Diagnostics;
 
@@ -8,6 +8,12 @@ namespace BadBlocksPlaceholder
     {
         static void Main(string[] args)
         {
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Usage: <program> [clean|drive] <directory|blockSize>");
+                return;
+            }
+
             string targetDir;
             if (args[0] == "clean")
             {
@@ -20,19 +26,26 @@ namespace BadBlocksPlaceholder
             }
             else
             {
+                if (!int.TryParse(args[1], out int blockSize))
+                {
+                    Console.WriteLine("Block size must be a valid integer");
+                    return;
+                }
                 var drive = new DriveInfo(args[0]);
-                int blockSize = int.Parse(args[1]) * 1024;
-                targetDir = CreateBlocks(drive, blockSize);
+                blockSize *= 1024;
+                targetDir = CreateBlocks(drive, blockSize, args);
             }
 
             Validate(targetDir);
             Console.WriteLine("Done!");
         }
-        private const int sw_write_treshold_ticks = 250000 * (int.Parse(args[1]) / 1024);
-        //Some magic. it usually takes 60000-200000 in normal cases on my pc
-    
 
-        private static string CreateBlocks(DriveInfo drive, int blockSize)
+        private static int GetWriteThresholdTicks(string[] args)
+        {
+            return 250000 * (int.Parse(args[1]) / 1024);
+        }
+
+        private static string CreateBlocks(DriveInfo drive, int blockSize, string[] args)
         {
             var block = new byte[blockSize];
             var bbDir = Path.Combine(drive.RootDirectory.FullName, "BadBlockPlaceholders");
@@ -48,26 +61,22 @@ namespace BadBlocksPlaceholder
 
             int index = 0;
             Stopwatch sw = new Stopwatch();
+            int sw_write_treshold_ticks = GetWriteThresholdTicks(args);
             while (drive.AvailableFreeSpace > blockSize)
             {
                 Console.WriteLine("Creating block #" + index);
                 var filename = Path.Combine(targetDir, index + ".bad");
                 ++index;
-                sw=Stopwatch.StartNew();
+                sw.Restart();
                 using (var filestream = File.OpenWrite(filename))
                 {
                     filestream.Write(block, 0, blockSize);
-                    filestream.Flush();
-                    filestream.Close();
                 }
                 sw.Stop();
-                // Console.WriteLine("  it took "+sw.ElapsedTicks.ToString()+"to write.");
-                /** 
-                *   That's what I used to get treshold.
-                */
-                if(sw.ElapsedTicks>sw_write_treshold_ticks){
-                System.IO.File.Move(filename,Path.Combine(slowDir,DateTime.Now.ToString("ddhhmmss")+index+ ".bad"));
-                Console.WriteLine(filename+" was too slow. it took "+sw.ElapsedTicks.ToString()+" to write. Moved");
+                if (sw.ElapsedTicks > sw_write_treshold_ticks)
+                {
+                    System.IO.File.Move(filename, Path.Combine(slowDir, DateTime.Now.ToString("ddhhmmss") + index + ".bad"));
+                    Console.WriteLine(filename + " was too slow. it took " + sw.ElapsedTicks.ToString() + " to write. Moved");
                 }
             }
             return targetDir;
