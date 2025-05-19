@@ -1,13 +1,16 @@
+# Untested as of yet
 version: 1.0.{build}
 image: Visual Studio 2022
 
 install:
-  - ps: iex ((New-Object System.Net.WebClient).DownloadString('https://dot.net/v1/dotnet-install.ps1'))
-  - ps: ./dotnet-install.ps1 -Version 2.1.300
+  - ps: ./dotnet-install.ps1 -Channel 8.0 -Quality GA
   - nuget restore BadBlocksPlaceholder.sln
 
-build:
-  project: BadBlocksPlaceholder.sln
-  verbosity: normal
+build_script:
+  - dotnet publish BadBlocksPlaceholder.sln -c Release -r win-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o ./publish
+
+artifacts:
+  - path: publish\*
+    name: SelfContainedExecutable
 
 configuration: Release
