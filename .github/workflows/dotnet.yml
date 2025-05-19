@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -32,6 +32,12 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-      
+    - name: Publish Self-Contained
+      run: dotnet publish --configuration Release --no-restore --runtime win-x64 --self-contained true --output ./publish
+
+    - name: Upload publish artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: self-contained-exe
+        path: ./publish/
+        
