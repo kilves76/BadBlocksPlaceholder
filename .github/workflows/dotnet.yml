@@ -8,13 +8,14 @@ on:
 
 jobs:
   build:
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
@@ -33,7 +34,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Publish Self-Contained
-      run: dotnet publish --configuration Release --no-restore --runtime win-x64 --self-contained true --output ./publish
+      run: dotnet publish --configuration Release --no-restore --runtime win-x64 --self-contained true --output ./publish /p:PublishTrimmed=true
 
     - name: Upload publish artifacts
       uses: actions/upload-artifact@v4
